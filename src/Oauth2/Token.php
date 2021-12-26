@@ -7,7 +7,13 @@ use ScapiPHP\ScapiClient;
 
 class Token extends ScapiClient
 {
-    public function getAccessToken(string $code, string $codeVerifier)
+    /**
+     * @param string $code
+     * @param string $codeVerifier
+     * @param string|null $usid
+     * @return mixed|void
+     */
+    public function getAccessToken(string $code, string $codeVerifier, string $usid = null)
     {
         $grantType = 'authorization_code_pkce';
         $data = [];
@@ -16,6 +22,11 @@ class Token extends ScapiClient
         $data['code'] = $code;
         $data['channel_id'] = $this->options['channel_id'];
         $data['code_verifier'] = $codeVerifier;
+
+        // usid is optional
+        if ($usid) {
+            $data['usid'] = $usid;
+        }
 
         $query = http_build_query($data);
 
