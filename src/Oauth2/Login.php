@@ -3,52 +3,26 @@ namespace ScapiPHP\Oauth2;
 
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
-use JetBrains\PhpStorm\ArrayShape;
+use ScapiPHP\Utils;
 use ScapiPHP\ScapiClient;
 
 class Login extends ScapiClient
 {
-    const CODE_VERIFIER_LENGTH = 43;
-    /**
-     * Source: https://stackoverflow.com/questions/4356289/php-random-string-generator
-     * @param int $length
-     * @return string
-     */
-    private function randomString(int $length = 10): string
-    {
-        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        $charactersLength = strlen($characters);
-        $randomString = '';
-        for ($i = 0; $i < $length; $i++) {
-            $randomString .= $characters[rand(0, $charactersLength - 1)];
-        }
-        return $randomString;
-    }
-
-    /**
-     * @param string $base64EncodedString
-     * @return string
-     */
-    private function base64url(string $base64EncodedString): string
-    {
-        $str = str_replace('=', '', $base64EncodedString);
-        $str = str_replace('+', '-', $str);
-        return str_replace('/', '_', $str);
-    }
+    const CODE_VERIFIER_LENGTH = 128;
 
     /**
      * @return array
      */
-    #[ArrayShape(['code_challange' => "string", 'code_verifier' => "string"])] private function codeChallenge(): array
+    private function codeChallenge(): array
     {
         // Code verifier is just a random string
-        $codeVerifier = $this->randomString(self::CODE_VERIFIER_LENGTH);
+        $codeVerifier = Utils::randomString(self::CODE_VERIFIER_LENGTH);
 
         $hashed = hash('sha256', $codeVerifier, true);
         $asBase64 = base64_encode($hashed);
 
         return [
-            'code_challenge' => $this->base64url($asBase64),
+            'code_challenge' => Utils::base64_url($asBase64),
             'code_verifier' => $codeVerifier
         ];
     }
