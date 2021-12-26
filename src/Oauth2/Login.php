@@ -1,12 +1,14 @@
 <?php
 namespace ScapiPHP\Oauth2;
 
+use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use JetBrains\PhpStorm\ArrayShape;
 use ScapiPHP\ScapiClient;
 
 class Login extends ScapiClient
 {
+    const CODE_VERIFIER_LENGTH = 43;
     /**
      * Source: https://stackoverflow.com/questions/4356289/php-random-string-generator
      * @param int $length
@@ -14,7 +16,7 @@ class Login extends ScapiClient
      */
     private function randomString(int $length = 10): string
     {
-        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         $charactersLength = strlen($characters);
         $randomString = '';
         for ($i = 0; $i < $length; $i++) {
@@ -24,19 +26,30 @@ class Login extends ScapiClient
     }
 
     /**
+     * @param string $base64EncodedString
+     * @return string
+     */
+    private function base64url(string $base64EncodedString): string
+    {
+        $str = str_replace('=', '', $base64EncodedString);
+        $str = str_replace('+', '-', $str);
+        return str_replace('/', '_', $str);
+    }
+
+    /**
      * @return array
      */
-    #[ArrayShape(['code_challange' => "array|string|string[]", 'code_verifier' => "string"])] private function codeChallenge(): array
+    #[ArrayShape(['code_challange' => "string", 'code_verifier' => "string"])] private function codeChallenge(): array
     {
-        // Random string
-        $randomString = $this->randomString(15);
+        // Code verifier is just a random string
+        $codeVerifier = $this->randomString(self::CODE_VERIFIER_LENGTH);
 
-        $hashed = hash('sha256', $randomString);
+        $hashed = hash('sha256', $codeVerifier, true);
         $asBase64 = base64_encode($hashed);
 
         return [
-            'code_challenge' => str_replace(['=', '+', '\\'], '', $asBase64),
-            'code_verifier' => $randomString
+            'code_challenge' => $this->base64url($asBase64),
+            'code_verifier' => $codeVerifier
         ];
     }
 
@@ -44,7 +57,7 @@ class Login extends ScapiClient
      * @param string $username
      * @param string $password
      * @return array|null
-     * @throws \Exception
+     * @throws Exception
      */
     public function authenticateCustomer(string $username, string $password): ?array
     {
@@ -71,7 +84,7 @@ class Login extends ScapiClient
                 $contentAsJson = json_decode($body);
 
                 if ($contentAsJson === null) {
-                    throw new \Exception("Invalid response from Salesforce instance.");
+                    throw new Exception("Invalid response from Salesforce instance.");
                 }
 
                 $authenticationCode = $contentAsJson->code;
