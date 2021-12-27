@@ -3,6 +3,7 @@
     "description": "An SDK for PHP to connect and work with Salesforce Commerce API",
     "type": "library",
     "license": "MIT",
+    "version": "0.0.1-alpha",
     "keywords": [
         "salesforce commerce api",
         "scapi"
