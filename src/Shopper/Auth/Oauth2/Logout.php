@@ -6,13 +6,17 @@ use ScapiPHP\ScapiClient;
 
 class Logout extends ScapiClient
 {
-    public function logoutCustomer(string $refreshToken, string $channelId)
+    public function logoutCustomer(string $refreshToken, string $channelId = null)
     {
         try {
             $data = [];
             $data['client_id'] = $this->options['client_id'];
             $data['refresh_token'] = $refreshToken;
-            $data['channel_id'] = $channelId;
+
+            // Channel id is not always required
+            if ($channelId != null) {
+                $data['channel_id'] = $channelId;
+            }
 
             $query = http_build_query($data);
 
