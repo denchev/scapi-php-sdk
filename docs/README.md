@@ -7,7 +7,7 @@ You need to know your instance short_code and org_id, the client_id, client_secr
 It will return an array with usid, authentication_code, scope, state and verification_code. You need the verification_code and authentication_code to complete the /token endpoint.
 
 ```phpt
-$scapiAPILogin = new \ScapiPHP\Oauth2\Login([
+$scapiAPILogin = new \ScapiPHP\Shopper\Auth\Oauth2\Login([
     'base_uri' => '',
     'client_id' => '',
     'channel_id' => '',
@@ -34,7 +34,7 @@ php -S localhost:3000
 After successful execution of the Login endpoint, you can continue to the next and final step - getting the access token. 
 
 ```phpt
-$scapiAPIToken = new \ScapiPHP\Oauth2\Token([
+$scapiAPIToken = new \ScapiPHP\Shopper\Auth\Oauth2\Token([
     'base_uri' => '',
     'client_id' => '',
     'client_secret' => '',
@@ -47,3 +47,11 @@ $accessToken = $tokens->access_token;
 ```
 
 Now you can use the $accessToken variable as Bearer token for the rest of the APIs access.
+
+## Logout
+
+If you would like to logout customer i.e. end authorization you can use the Shopper\Auth\Oauth2\Logout class
+
+```phpt
+$logout = $scapiAPILogout->authenticate($YOUR_ACCESS_TOKEN)->logoutCustomer($YOUR_REFRESH_TOKEN, $channelId);
+```
