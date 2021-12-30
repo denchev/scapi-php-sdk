@@ -1,8 +1,9 @@
 <?php
 
-namespace ScapiPHP\Oauth2;
+namespace ScapiPHP\Shopper\Auth\Oauth2;
 
 use GuzzleHttp\Exception\GuzzleException;
+use ScapiPHP\Exceptions\ServiceConnectionException;
 use ScapiPHP\ScapiClient;
 
 class Token extends ScapiClient
@@ -12,6 +13,7 @@ class Token extends ScapiClient
      * @param string $codeVerifier
      * @param string|null $usid
      * @return mixed|void
+     * @throws ServiceConnectionException
      */
     public function getAccessToken(string $code, string $codeVerifier, string $usid = null)
     {
@@ -48,7 +50,9 @@ class Token extends ScapiClient
                 }
             }
         } catch (GuzzleException $ex) {
-            echo $ex->getMessage();
+            throw new ServiceConnectionException("Service connection cannot be established.");
         }
+
+        return null;
     }
 }

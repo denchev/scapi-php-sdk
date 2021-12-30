@@ -1,10 +1,15 @@
 <?php
-namespace ScapiPHP\Oauth2;
+namespace ScapiPHP\Shopper\Auth\Oauth2;
 
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
-use ScapiPHP\Utils;
+use ScapiPHP\Clients\ClientInterface;
+use ScapiPHP\Exceptions\ServiceCallbackErrorException;
+use ScapiPHP\Exceptions\ServiceConnectionException;
+use ScapiPHP\Exceptions\ServiceResponseException;
+use ScapiPHP\Exceptions\ServiceResponseInvalidException;
 use ScapiPHP\ScapiClient;
+use ScapiPHP\Utils;
 
 class Login extends ScapiClient
 {
@@ -58,7 +63,7 @@ class Login extends ScapiClient
                 $contentAsJson = json_decode($body);
 
                 if ($contentAsJson === null) {
-                    throw new Exception("Invalid response from Salesforce instance.");
+                    throw new ServiceResponseInvalidException("Service response is in an invalid format.");
                 }
 
                 $authenticationCode = $contentAsJson->code;
@@ -73,10 +78,16 @@ class Login extends ScapiClient
                     'state' => $state,
                     'scope' => $scope
                 ];
+            } else {
+                throw new ServiceResponseException("Services response status is an error.");
             }
 
         } catch (GuzzleException $e) {
-            $this->logger->critical($e->getMessage());
+            if (strstr($e->getMessage(), $this->options['redirect_uri']) >= 0) {
+                throw new ServiceCallbackErrorException("Salesforce cannot connect to your callback. Check redirect_uri service.");
+            } else {
+                throw new ServiceConnectionException("Service connection cannot be established. Message: " . $e->getMessage());
+            }
         }
 
         return null;
