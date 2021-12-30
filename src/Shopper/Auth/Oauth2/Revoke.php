@@ -1,5 +1,5 @@
 <?php
-namespace ScapiPHP\Oauth2;
+namespace ScapiPHP\Shopper\Auth\Oauth2;
 
 class Revoke
 {

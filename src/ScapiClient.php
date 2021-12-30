@@ -12,6 +12,8 @@ class ScapiClient
 
     protected array $options = [];
 
+    protected string $accessToken;
+
     public function __construct(array $options = array()) {
         $this->options = $options;
 
@@ -20,5 +22,17 @@ class ScapiClient
             'timeout' => 2.0
         ]);
         $this->logger = new Logger('scapi-api');
+    }
+
+    public function authenticate($accessToken): static
+    {
+        $this->accessToken = $accessToken;
+
+        return $this;
+    }
+
+    protected function getBearerToken(): string
+    {
+        return $this->accessToken;
     }
 }
